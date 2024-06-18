@@ -13,6 +13,8 @@ GMotor2<DRIVER2WIRE> motor1(12, 14); //D1, D2 - Гусеница левая
 GMotor2<DRIVER2WIRE> motor2(2, 13); //D4, D7 - Гусеника правая
 GMotor2<DRIVER2WIRE> motor3(5, 4); //D6, D5 - Вращение крана
 
+
+
 void setup() {
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
@@ -42,7 +44,9 @@ void loop() {
   motor2.tick();
   motor3.tick();
   int speed_mode[3];
-  
+  int8_t k1; //коэффициенты моторов
+  int8_t k2;
+
   if (WiFi.status() == WL_CONNECTED) {
     // Прием данных по UDP
     char incomingPacket[255];
@@ -64,16 +68,46 @@ void loop() {
         for (int i=0;i<3;i++){
           speed_mode[i]= (i==0) ? data.getInt(i): map(data.getInt(i),172,1811,-255,255);
         }
-        speed_mode[1] = (speed_mode[1]>=-2 && speed_mode[1]<=2) ? 0 : speed_mode[1];
-        speed_mode[2] = (speed_mode[2]>=-2 && speed_mode[2]<=2) ? 0 : speed_mode[2];
-        for (int i=0;i<3;i++){
+        speed_mode[1] = (speed_mode[1]>=-10 && speed_mode[1]<=10) ? 0 : speed_mode[1];
+        speed_mode[2] = (speed_mode[2]>=-10 && speed_mode[2]<=10) ? 0 : speed_mode[2];
+        /*for (int i=0;i<3;i++){
           Serial.print(speed_mode[i]);
           Serial.print(" ");
         }
-        Serial.println();
+        Serial.println();*/  
       }
-    }
 
+      //v1.1
+      if (speed_mode[0]==0){
+        speed_mode[1]=0;
+        speed_mode[2]=0;
+      }else{
+        if (speed_mode[1]>=0 && speed_mode[2]>=0){ 
+          if (speed_mode[1]==0){
+            speed_mode[1]=speed_mode[2];
+            k1=k2=-1;
+          }
+          else if (speed_mode[2]==0){
+            speed_mode[2]=speed_mode[1];
+            k1=1;
+            k2=-1;
+          }else if(speed_mode[1]==0 && speed_mode[2]==0){
+            k1=k2=0;
+          }else if(speed_mode[1]!=0 && speed_mode[2]!=0){
+            speed_mode[2]=255+speed_mode[1];
+            k1=k2=-1;
+          }
+        }
+      }
+      Serial.print((k1)*speed_mode[1]);
+      Serial.print(" ");
+      Serial.print((k2)*speed_mode[2]);
+      Serial.print(" ");
+      Serial.println();  
+      motor1.setSpeed((k1)*speed_mode[1]);
+      motor2.setSpeed((k2)*speed_mode[2]);
+    }
+    
     //v1.0
     /*if (mode==0){
       speed=0;
@@ -84,33 +118,6 @@ void loop() {
       motor1.setSpeed(speed);
       motor2.setSpeed((-1)*speed);
     }*/
-
-    //v1.1
-    int8_t k1; //коэффициенты моторов
-    int8_t k2;
-    if (speed_mode[0]==0){
-      speed_mode[1]=0;
-      speed_mode[2]=0;
-    }else{
-      if (speed_mode[1]>=0 && speed_mode[2]>=0){  
-        if (speed_mode[1]==0){
-          speed_mode[1]=speed_mode[2];
-          k1=k2=-1;
-        }else if (speed_mode[2]==0){
-          speed_mode[2]=speed_mode[1];
-          k1=1;
-          k2=-1;
-        }
-        speed_mode[2]=255-speed_mode[1];
-        k1=k2=1;
-      }else if(speed_mode[1]==0 && speed_mode[2]==0){
-        k1=k2=0;
-      }
-    }
-
-    motor1.setSpeed((k1)*speed_mode[1]);
-    motor2.setSpeed((k2)*speed_mode[2]);
-
   }else{
     speed_mode[1]=0;
     speed_mode[2]=0;
