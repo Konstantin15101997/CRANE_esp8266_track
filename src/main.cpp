@@ -13,7 +13,10 @@ GMotor2<DRIVER2WIRE> motor1(2, 13); //D6, D5 - Гусеница левая
 GMotor2<DRIVER2WIRE> motor2(12, 14); //D4, D7 - Гусеника правая
 GMotor2<DRIVER2WIRE> motor3(5, 4); //D1, D2 - Вращение крана
 
-
+struct Speeds{
+  int speed1; //Скорость 1 и 2 мотора
+  int speed2;
+};
 
 void setup() {
   Serial.begin(115200);
@@ -44,8 +47,6 @@ void loop() {
   motor2.tick();
   motor3.tick();
   int speed_mode[3];
-  int speed1; //Скорость 1 и 2 мотора
-  int speed2;
 
   if (WiFi.status() == WL_CONNECTED) {
     // Прием данных по UDP
@@ -82,11 +83,38 @@ void loop() {
         speed1=0;
         speed2=0;
       }else{
-        if (speed_mode[1]>=0 && speed_mode[2]>=0){
-          if (speed_mode[1]>=100){
-            if (abs(speed_mode[1])>=abs(speed_mode[2])){
-              speed1=speed_mode[1];
-            }else{
+        Speeds operation;
+        operation = Speed_value(speed_mode[1],speed_mode[2]);
+      }
+
+      motor1.setSpeed(operation.speed1);
+      motor2.setSpeed(operation.speed2);
+    }
+    
+    //v1.0
+    /*if (mode==0){
+      speed=0;
+    }else if (mode==1){
+      motor1.setSpeed(speed);
+      motor2.setSpeed(speed);
+    }else if (mode==2){
+      motor1.setSpeed(speed);
+      motor2.setSpeed((-1)*speed);
+    }*/
+  }else{
+    speed1=0;
+    speed2=0;
+  }
+
+  delay(10);
+}
+
+Speeds Speed_value(){
+  if (speed_mode[1]>=0 && speed_mode[2]>=0){
+    if (speed_mode[1]>=100){
+      if (abs(speed_mode[1])>=abs(speed_mode[2])){
+        speed1=speed_mode[1];
+      }else{
               speed1=speed_mode[2];
             }
             speed2=speed_mode[1]-speed_mode[2];
@@ -143,32 +171,5 @@ void loop() {
             }
           }
         }
-      }
-      
-      Serial.print(speed1);
-      Serial.print(" ");
-      Serial.print(speed2);
-      Serial.print(" ");
-      Serial.println(); 
-
-      motor1.setSpeed(speed1);
-      motor2.setSpeed(speed2);
-    }
-    
-    //v1.0
-    /*if (mode==0){
-      speed=0;
-    }else if (mode==1){
-      motor1.setSpeed(speed);
-      motor2.setSpeed(speed);
-    }else if (mode==2){
-      motor1.setSpeed(speed);
-      motor2.setSpeed((-1)*speed);
-    }*/
-  }else{
-    speed1=0;
-    speed2=0;
-  }
-
-  delay(10);
+  return operation;
 }
