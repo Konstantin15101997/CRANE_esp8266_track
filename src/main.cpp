@@ -9,8 +9,8 @@ const int udpServerPort = 1234;            // Порт получателя
 
 WiFiUDP udp;
 
-GMotor2<DRIVER2WIRE> motor1(12, 14); //D6, D5 - Гусеница левая
-GMotor2<DRIVER2WIRE> motor2(2, 13); //D4, D7 - Гусеника правая
+GMotor2<DRIVER2WIRE> motor1(2, 13); //D6, D5 - Гусеница левая
+GMotor2<DRIVER2WIRE> motor2(12, 14); //D4, D7 - Гусеника правая
 GMotor2<DRIVER2WIRE> motor3(5, 4); //D1, D2 - Вращение крана
 
 
@@ -44,8 +44,8 @@ void loop() {
   motor2.tick();
   motor3.tick();
   int speed_mode[3];
-  int8_t k1; //коэффициенты моторов
-  int8_t k2;
+  int8_t k1=1; //коэффициенты моторов
+  int8_t k2=1;
 
   if (WiFi.status() == WL_CONNECTED) {
     // Прием данных по UDP
