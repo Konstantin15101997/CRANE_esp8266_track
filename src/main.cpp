@@ -9,9 +9,9 @@ const int udpServerPort = 1234;            // Порт получателя
 
 WiFiUDP udp;
 
-GMotor2<DRIVER2WIRE> motor1(12, 14); //D1, D2 - Гусеница левая
+GMotor2<DRIVER2WIRE> motor1(12, 14); //D6, D5 - Гусеница левая
 GMotor2<DRIVER2WIRE> motor2(2, 13); //D4, D7 - Гусеника правая
-GMotor2<DRIVER2WIRE> motor3(5, 4); //D6, D5 - Вращение крана
+GMotor2<DRIVER2WIRE> motor3(5, 4); //D1, D2 - Вращение крана
 
 
 
@@ -70,40 +70,23 @@ void loop() {
         }
         speed_mode[1] = (speed_mode[1]>=-10 && speed_mode[1]<=10) ? 0 : speed_mode[1];
         speed_mode[2] = (speed_mode[2]>=-10 && speed_mode[2]<=10) ? 0 : speed_mode[2];
-        /*for (int i=0;i<3;i++){
+        for (int i=0;i<3;i++){
           Serial.print(speed_mode[i]);
           Serial.print(" ");
         }
-        Serial.println();*/  
+        Serial.println();
       }
 
       //v1.1
       if (speed_mode[0]==0){
         speed_mode[1]=0;
         speed_mode[2]=0;
-      }else{
-        if (speed_mode[1]>=0 && speed_mode[2]>=0){ 
-          if (speed_mode[1]==0){
-            speed_mode[1]=speed_mode[2];
-            k1=k2=-1;
-          }
-          else if (speed_mode[2]==0){
-            speed_mode[2]=speed_mode[1];
-            k1=1;
-            k2=-1;
-          }else if(speed_mode[1]==0 && speed_mode[2]==0){
-            k1=k2=0;
-          }else if(speed_mode[1]!=0 && speed_mode[2]!=0){
-            speed_mode[2]=255+speed_mode[1];
-            k1=k2=-1;
-          }
-        }
       }
-      Serial.print((k1)*speed_mode[1]);
+      /*Serial.print((k1)*speed_mode[1]);
       Serial.print(" ");
       Serial.print((k2)*speed_mode[2]);
       Serial.print(" ");
-      Serial.println();  
+      Serial.println();  */
       motor1.setSpeed((k1)*speed_mode[1]);
       motor2.setSpeed((k2)*speed_mode[2]);
     }
