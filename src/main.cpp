@@ -44,8 +44,8 @@ void loop() {
   motor2.tick();
   motor3.tick();
   int speed_mode[3];
-  int8_t k1=1; //коэффициенты моторов
-  int8_t k2=1;
+  int speed1; //Скорость 1 и 2 мотора
+  int speed2;
 
   if (WiFi.status() == WL_CONNECTED) {
     // Прием данных по UDP
@@ -70,25 +70,89 @@ void loop() {
         }
         speed_mode[1] = (speed_mode[1]>=-10 && speed_mode[1]<=10) ? 0 : speed_mode[1];
         speed_mode[2] = (speed_mode[2]>=-10 && speed_mode[2]<=10) ? 0 : speed_mode[2];
-        for (int i=0;i<3;i++){
+        /*for (int i=0;i<3;i++){
           Serial.print(speed_mode[i]);
           Serial.print(" ");
         }
-        Serial.println();
+        Serial.println();*/
       }
 
       //v1.1
       if (speed_mode[0]==0){
-        speed_mode[1]=0;
-        speed_mode[2]=0;
+        speed1=0;
+        speed2=0;
+      }else{
+        if (speed_mode[1]>=0 && speed_mode[2]>=0){
+          if (speed_mode[1]>=100){
+            if (abs(speed_mode[1])>=abs(speed_mode[2])){
+              speed1=speed_mode[1];
+            }else{
+              speed1=speed_mode[2];
+            }
+            speed2=speed_mode[1]-speed_mode[2];
+          }else{
+            if (speed_mode[2]>=150){
+              speed1=speed_mode[2];
+              speed2=-speed_mode[2];
+            }else{
+              speed1=0;
+              speed2=0;
+            }
+          }
+        }else if (speed_mode[1]<0 && speed_mode[2]>=0){
+          if (speed_mode[1]<=-100){
+            speed1=speed_mode[1];
+            speed2=speed_mode[1]+speed_mode[2];
+          }else{
+            if (speed_mode[2]>=150){
+              speed1=speed_mode[2];
+              speed2=-speed_mode[2];
+            }else{
+              speed1=0;
+              speed2=0;
+            }
+          }
+        }else if (speed_mode[1]<=0 && speed_mode[2]<0){
+          if (speed_mode[1]<=-100){
+            if (abs(speed_mode[1])>=abs(speed_mode[2])){
+              speed2=speed_mode[1];
+            }else{
+              speed2=speed_mode[2];
+            }
+            speed1=speed_mode[1]-speed_mode[2];
+          }else{
+            if (speed_mode[2]<=-150){
+              speed1=speed_mode[2];
+              speed2=-speed_mode[2];
+            }else{
+              speed1=0;
+              speed2=0;
+            }
+          }
+        }else if (speed_mode[1]>0 && speed_mode[2]<0){
+          if (speed_mode[1]>=100){
+            speed1=speed_mode[1]+speed_mode[2];
+            speed2=speed_mode[1];
+          }else{
+            if (speed_mode[2]<=-150){
+              speed1=speed_mode[2];
+              speed2=-speed_mode[2];
+            }else{
+              speed1=0;
+              speed2=0;
+            }
+          }
+        }
       }
-      /*Serial.print((k1)*speed_mode[1]);
+      
+      Serial.print(speed1);
       Serial.print(" ");
-      Serial.print((k2)*speed_mode[2]);
+      Serial.print(speed2);
       Serial.print(" ");
-      Serial.println();  */
-      motor1.setSpeed((k1)*speed_mode[1]);
-      motor2.setSpeed((k2)*speed_mode[2]);
+      Serial.println(); 
+
+      motor1.setSpeed(speed1);
+      motor2.setSpeed(speed2);
     }
     
     //v1.0
@@ -102,8 +166,8 @@ void loop() {
       motor2.setSpeed((-1)*speed);
     }*/
   }else{
-    speed_mode[1]=0;
-    speed_mode[2]=0;
+    speed1=0;
+    speed2=0;
   }
 
   delay(10);
