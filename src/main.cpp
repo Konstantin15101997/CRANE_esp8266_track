@@ -17,6 +17,73 @@ struct Speeds{
   int speed1; //Скорость 1 и 2 мотора
   int speed2;
 };
+Speeds operation;
+int speed_mode[3];
+
+Speeds Speed_value(int sp1,int sp2){
+  if (sp1>=0 && sp2>=0){
+    if (sp1>=100){
+      if (abs(sp1)>=abs(sp2)){
+        operation.speed1=sp1;
+      }else{
+              operation.speed1=sp2;
+            }
+            operation.speed2=sp1-sp2;
+          }else{
+            if (sp2>=150){
+              operation.speed1=sp2;
+              operation.speed2=-sp2;
+            }else{
+              operation.speed1=0;
+              operation.speed2=0;
+            }
+          }
+        }else if (sp1<0 && sp2>=0){
+          if (sp1<=-100){
+            operation.speed1=sp1;
+            operation.speed2=sp1+sp2;
+          }else{
+            if (sp2>=150){
+              operation.speed1=sp2;
+              operation.speed2=-sp2;
+            }else{
+              operation.speed1=0;
+              operation.speed2=0;
+            }
+          }
+        }else if (sp1<=0 && sp2<0){
+          if (sp1<=-100){
+            if (abs(sp1)>=abs(sp2)){
+              operation.speed2=sp1;
+            }else{
+              operation.speed2=sp2;
+            }
+            operation.speed1=sp1-sp2;
+          }else{
+            if (speed_mode[2]<=-150){
+              operation.speed1=sp2;
+              operation.speed2=-sp2;
+            }else{
+              operation.speed1=0;
+              operation.speed2=0;
+            }
+          }
+        }else if (sp1>0 && sp2<0){
+          if (sp1>=100){
+            operation.speed1=sp1+sp2;
+            operation.speed2=sp1;
+          }else{
+            if (sp2<=-150){
+              operation.speed1=sp2;
+              operation.speed2=-sp2;
+            }else{
+              operation.speed1=0;
+              operation.speed2=0;
+            }
+          }
+        }
+  return operation;
+}
 
 void setup() {
   Serial.begin(115200);
@@ -46,7 +113,6 @@ void loop() {
   motor1.tick();
   motor2.tick();
   motor3.tick();
-  int speed_mode[3];
 
   if (WiFi.status() == WL_CONNECTED) {
     // Прием данных по UDP
@@ -59,117 +125,26 @@ void loop() {
         GParser data(incomingPacket, ',');
         int am = data.split(); 
         //Serial.printf("%s\n",incomingPacket);
-
-        //v1.0
-        /*mode=data.getInt(0);
-        speed=map(data.getInt(1),172,1811,-255,255);
-        speed = (speed>=-2 && speed<=2) ? 0 : speed;*/
-
-        //v1.1
         for (int i=0;i<3;i++){
           speed_mode[i]= (i==0) ? data.getInt(i): map(data.getInt(i),172,1811,-255,255);
         }
         speed_mode[1] = (speed_mode[1]>=-10 && speed_mode[1]<=10) ? 0 : speed_mode[1];
         speed_mode[2] = (speed_mode[2]>=-10 && speed_mode[2]<=10) ? 0 : speed_mode[2];
-        /*for (int i=0;i<3;i++){
-          Serial.print(speed_mode[i]);
-          Serial.print(" ");
-        }
-        Serial.println();*/
       }
-
-      //v1.1
       if (speed_mode[0]==0){
-        speed1=0;
-        speed2=0;
+        operation.speed1=0;
+        operation.speed2=0;
       }else{
-        Speeds operation;
         operation = Speed_value(speed_mode[1],speed_mode[2]);
       }
 
       motor1.setSpeed(operation.speed1);
       motor2.setSpeed(operation.speed2);
     }
-    
-    //v1.0
-    /*if (mode==0){
-      speed=0;
-    }else if (mode==1){
-      motor1.setSpeed(speed);
-      motor2.setSpeed(speed);
-    }else if (mode==2){
-      motor1.setSpeed(speed);
-      motor2.setSpeed((-1)*speed);
-    }*/
   }else{
-    speed1=0;
-    speed2=0;
+      operation.speed1=0;
+      operation.speed2=0;
   }
 
   delay(10);
-}
-
-Speeds Speed_value(){
-  if (speed_mode[1]>=0 && speed_mode[2]>=0){
-    if (speed_mode[1]>=100){
-      if (abs(speed_mode[1])>=abs(speed_mode[2])){
-        speed1=speed_mode[1];
-      }else{
-              speed1=speed_mode[2];
-            }
-            speed2=speed_mode[1]-speed_mode[2];
-          }else{
-            if (speed_mode[2]>=150){
-              speed1=speed_mode[2];
-              speed2=-speed_mode[2];
-            }else{
-              speed1=0;
-              speed2=0;
-            }
-          }
-        }else if (speed_mode[1]<0 && speed_mode[2]>=0){
-          if (speed_mode[1]<=-100){
-            speed1=speed_mode[1];
-            speed2=speed_mode[1]+speed_mode[2];
-          }else{
-            if (speed_mode[2]>=150){
-              speed1=speed_mode[2];
-              speed2=-speed_mode[2];
-            }else{
-              speed1=0;
-              speed2=0;
-            }
-          }
-        }else if (speed_mode[1]<=0 && speed_mode[2]<0){
-          if (speed_mode[1]<=-100){
-            if (abs(speed_mode[1])>=abs(speed_mode[2])){
-              speed2=speed_mode[1];
-            }else{
-              speed2=speed_mode[2];
-            }
-            speed1=speed_mode[1]-speed_mode[2];
-          }else{
-            if (speed_mode[2]<=-150){
-              speed1=speed_mode[2];
-              speed2=-speed_mode[2];
-            }else{
-              speed1=0;
-              speed2=0;
-            }
-          }
-        }else if (speed_mode[1]>0 && speed_mode[2]<0){
-          if (speed_mode[1]>=100){
-            speed1=speed_mode[1]+speed_mode[2];
-            speed2=speed_mode[1];
-          }else{
-            if (speed_mode[2]<=-150){
-              speed1=speed_mode[2];
-              speed2=-speed_mode[2];
-            }else{
-              speed1=0;
-              speed2=0;
-            }
-          }
-        }
-  return operation;
 }
