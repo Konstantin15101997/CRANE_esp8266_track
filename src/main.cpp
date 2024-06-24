@@ -9,8 +9,8 @@ const int udpServerPort = 1234;            // Порт получателя
 
 WiFiUDP udp;
 
-GMotor2<DRIVER2WIRE> motor1(2, 13); //D6, D5 - Гусеница левая
-GMotor2<DRIVER2WIRE> motor2(12, 14); //D4, D7 - Гусеника правая
+GMotor2<DRIVER2WIRE> motor1(2, 13); //D4, D7 - Гусеница левая
+GMotor2<DRIVER2WIRE> motor2(12, 14); //D5, D6 - Гусеника правая
 GMotor2<DRIVER2WIRE> motor3(5, 4); //D1, D2 - Вращение крана
 
 struct Speeds{
@@ -137,7 +137,11 @@ void loop() {
       }else{
         operation = Speed_value(speed_mode[1],speed_mode[2]);
       }
-
+      Serial.print(operation.speed1);
+      Serial.print(" ");
+      Serial.print(operation.speed2);
+      Serial.print(" ");
+      Serial.println();
       motor1.setSpeed(operation.speed1);
       motor2.setSpeed(operation.speed2);
     }
