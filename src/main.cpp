@@ -148,9 +148,16 @@ void loop() {
       Serial.print(operation.speed2);
       Serial.print(" ");
       Serial.println();
-      motor1.setSpeed(operation.speed1);
-      motor2.setSpeed(operation.speed2);
-      motor3.setSpeed(operation.speed2);
+      if (speed_mode[0]==1){
+        motor1.setSpeed(operation.speed1);
+        motor2.setSpeed(operation.speed2);
+        motor3.setSpeed(0);
+      }else if (speed_mode[0]==2){
+        motor1.setSpeed(0);
+        motor2.setSpeed(0);
+        motor3.setSpeed(operation.speed2);
+      }
+
     }
   }else{
       operation.speed1=0;
