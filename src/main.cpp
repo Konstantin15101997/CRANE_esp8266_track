@@ -9,7 +9,7 @@ const int udpServerPort = 1234;            // Порт получателя
 
 WiFiUDP udp;
 
-GMotor2<DRIVER2WIRE> motor1(2, 13); //D4, D7 - Гусеница левая
+GMotor2<DRIVER2WIRE> motor1(2, 1); //D4, tx - Гусеница левая
 GMotor2<DRIVER2WIRE> motor2(12, 14); //D5, D6 - Гусеника правая
 GMotor2<DRIVER2WIRE> motor3(5, 4); //D1, D2 - Вращение крана
 
