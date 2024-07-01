@@ -14,74 +14,80 @@ GMotor2<DRIVER2WIRE> motor2(12, 14); //D5, D6 - Гусеника правая
 GMotor2<DRIVER2WIRE> motor3(5, 4); //D1, D2 - Вращение крана
 
 struct Speeds{
+  int mode; 
   int speed1; //Скорость 1 и 2 мотора
   int speed2;
 };
 Speeds operation;
 int speed_mode[3];
 
-Speeds Speed_value(int sp1,int sp2){
-  if (sp1>=0 && sp2>=0){
-    if (sp1>=100){
-      if (abs(sp1)>=abs(sp2)){
-        operation.speed1=sp1;
-      }else{
-              operation.speed1=sp2;
-            }
-            operation.speed2=sp1-sp2;
-          }else{
-            if (sp2>=150){
-              operation.speed1=sp2;
-              operation.speed2=-sp2;
-            }else{
-              operation.speed1=0;
-              operation.speed2=0;
-            }
-          }
-        }else if (sp1<0 && sp2>=0){
-          if (sp1<=-100){
-            operation.speed1=sp1;
-            operation.speed2=sp1+sp2;
-          }else{
-            if (sp2>=150){
-              operation.speed1=sp2;
-              operation.speed2=-sp2;
-            }else{
-              operation.speed1=0;
-              operation.speed2=0;
-            }
-          }
-        }else if (sp1<=0 && sp2<0){
-          if (sp1<=-100){
-            if (abs(sp1)>=abs(sp2)){
-              operation.speed2=sp1;
-            }else{
-              operation.speed2=sp2;
-            }
-            operation.speed1=sp1-sp2;
-          }else{
-            if (speed_mode[2]<=-150){
-              operation.speed1=sp2;
-              operation.speed2=-sp2;
-            }else{
-              operation.speed1=0;
-              operation.speed2=0;
-            }
-          }
-        }else if (sp1>0 && sp2<0){
-          if (sp1>=100){
-            operation.speed1=sp1+sp2;
-            operation.speed2=sp1;
-          }else{
-            if (sp2<=-150){
-              operation.speed1=sp2;
-              operation.speed2=-sp2;
-            }else{
-              operation.speed1=0;
-              operation.speed2=0;
-            }
-          }
+Speeds Speed_value(int md,int sp1,int sp2){
+  if (md==1){
+    if (sp1>=0 && sp2>=0){
+      if (sp1>=100){
+        if (abs(sp1)>=abs(sp2)){
+          operation.speed1=sp1;
+        }else{
+          operation.speed1=sp2;
         }
+          operation.speed2=sp1-sp2;
+      }else{
+        if (sp2>=150){
+          operation.speed1=sp2;
+          operation.speed2=-sp2;
+        }else{
+          operation.speed1=0;
+          operation.speed2=0;
+        }
+      }
+    }else if (sp1<0 && sp2>=0){
+      if (sp1<=-100){
+        operation.speed1=sp1;
+        operation.speed2=sp1+sp2;
+      }else{
+        if (sp2>=150){
+          operation.speed1=sp2;
+          operation.speed2=-sp2;
+        }else{
+          operation.speed1=0;
+          operation.speed2=0;
+        }
+      }
+    }else if (sp1<=0 && sp2<0){
+      if (sp1<=-100){
+        if (abs(sp1)>=abs(sp2)){
+          operation.speed2=sp1;
+        }else{
+          operation.speed2=sp2;
+        }
+          operation.speed1=sp1-sp2;
+      }else{
+        if (speed_mode[2]<=-150){
+          operation.speed1=sp2;
+          operation.speed2=-sp2;
+        }else{
+          operation.speed1=0;
+          operation.speed2=0;
+        }
+      }
+    }else if (sp1>0 && sp2<0){
+    if (sp1>=100){
+      operation.speed1=sp1+sp2;
+      operation.speed2=sp1;
+    }else{
+      if (sp2<=-150){
+        operation.speed1=sp2;
+        operation.speed2=-sp2;
+      }else{
+        operation.speed1=0;
+        operation.speed2=0;
+      }
+    }
+  }
+  }else{
+    operation.speed1=0;
+    operation.speed2=sp2;
+  }
   return operation;
 }
 
@@ -135,7 +141,7 @@ void loop() {
         operation.speed1=0;
         operation.speed2=0;
       }else{
-        operation = Speed_value(speed_mode[1],speed_mode[2]);
+        operation = Speed_value(speed_mode[0],speed_mode[1],speed_mode[2]);
       }
       Serial.print(operation.speed1);
       Serial.print(" ");
@@ -144,6 +150,7 @@ void loop() {
       Serial.println();
       motor1.setSpeed(operation.speed1);
       motor2.setSpeed(operation.speed2);
+      motor3.setSpeed(operation.speed2);
     }
   }else{
       operation.speed1=0;
