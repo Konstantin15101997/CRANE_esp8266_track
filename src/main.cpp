@@ -14,16 +14,16 @@ GMotor2<DRIVER2WIRE> motor2(12, 14); //D5, D6 - Гусеника правая
 GMotor2<DRIVER2WIRE> motor3(5, 4); //D1, D2 - Вращение крана
 
 struct Speeds{
-  int mode; 
-  int speed1; //Скорость 1 и 2 мотора
+  int speed1;
   int speed2;
+  int speed3;
 };
 Speeds operation;
 int speed_mode[3];
 
-Speeds Speed_value(int md,int sp1,int sp2){
-  if (md==1){
-    if (sp1>=0 && sp2>=0){
+Speeds Speed_value(int sp1,int sp2, int sp3){
+
+  if (sp1>=0 && sp2>=0){
       if (sp1>=100){
         if (abs(sp1)>=abs(sp2)){
           operation.speed1=sp1;
@@ -40,20 +40,27 @@ Speeds Speed_value(int md,int sp1,int sp2){
           operation.speed2=0;
         }
       }
-    }else if (sp1<0 && sp2>=0){
+  }else if (sp1<0 && sp2>=0){
       if (sp1<=-100){
-        operation.speed1=sp1;
-        operation.speed2=sp1+sp2;
+        if (sp2>=245){
+          operation.speed1=sp1;
+          operation.speed2=0;
+        }
+        else{
+          operation.speed1=sp1;
+          operation.speed2=sp1+sp2;
+        }
       }else{
         if (sp2>=150){
           operation.speed1=sp2;
           operation.speed2=-sp2;
+          
         }else{
           operation.speed1=0;
           operation.speed2=0;
         }
       }
-    }else if (sp1<=0 && sp2<0){
+  }else if (sp1<=0 && sp2<0){
       if (sp1<=-100){
         if (abs(sp1)>=abs(sp2)){
           operation.speed2=sp1;
@@ -62,7 +69,7 @@ Speeds Speed_value(int md,int sp1,int sp2){
         }
           operation.speed1=sp1-sp2;
       }else{
-        if (speed_mode[2]<=-150){
+        if (sp2<=-150){
           operation.speed1=sp2;
           operation.speed2=-sp2;
         }else{
@@ -70,7 +77,7 @@ Speeds Speed_value(int md,int sp1,int sp2){
           operation.speed2=0;
         }
       }
-    }else if (sp1>0 && sp2<0){
+  }else if (sp1>0 && sp2<0){
     if (sp1>=100){
       operation.speed1=sp1+sp2;
       operation.speed2=sp1;
@@ -84,10 +91,7 @@ Speeds Speed_value(int md,int sp1,int sp2){
       }
     }
   }
-  }else{
-    operation.speed1=0;
-    operation.speed2=sp2;
-  }
+  operation.speed3=sp3;
   return operation;
 }
 
@@ -128,40 +132,35 @@ void loop() {
       int len = udp.read(incomingPacket, 255);
       if (len > 0) {
         incomingPacket[len] = 0;
+        //Serial.printf("%s\n",incomingPacket);
         GParser data(incomingPacket, ',');
         int am = data.split(); 
-        //Serial.printf("%s\n",incomingPacket);
         for (int i=0;i<3;i++){
-          speed_mode[i]= (i==0) ? data.getInt(i): map(data.getInt(i),172,1811,-255,255);
+          speed_mode[i]= data.getInt(i);
         }
+        speed_mode[0] = (speed_mode[0]>=-10 && speed_mode[0]<=10) ? 0 : speed_mode[0];
         speed_mode[1] = (speed_mode[1]>=-10 && speed_mode[1]<=10) ? 0 : speed_mode[1];
         speed_mode[2] = (speed_mode[2]>=-10 && speed_mode[2]<=10) ? 0 : speed_mode[2];
       }
-      if (speed_mode[0]==0){
-        operation.speed1=0;
-        operation.speed2=0;
-      }else{
-        operation = Speed_value(speed_mode[0],speed_mode[1],speed_mode[2]);
-      }
+
+      operation = Speed_value(speed_mode[0],speed_mode[1],speed_mode[2]);
+      
       Serial.print(operation.speed1);
       Serial.print(" ");
       Serial.print(operation.speed2);
       Serial.print(" ");
+      Serial.print(operation.speed3);
+      Serial.print(" ");
       Serial.println();
-      if (speed_mode[0]==1){
-        motor1.setSpeed(operation.speed1);
-        motor2.setSpeed(operation.speed2);
-        motor3.setSpeed(0);
-      }else if (speed_mode[0]==2){
-        motor1.setSpeed(0);
-        motor2.setSpeed(0);
-        motor3.setSpeed(operation.speed2);
-      }
 
+      motor1.setSpeed(operation.speed1);
+      motor2.setSpeed(operation.speed2);
+      motor3.setSpeed(operation.speed3);
     }
   }else{
       operation.speed1=0;
       operation.speed2=0;
+      operation.speed3=0;
   }
 
   delay(10);
